@@ -30,8 +30,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000",
-    "https://agent-hari-ui.vercel.app",]
+    allow_origins=[
+        "http://localhost:3000",
+        "https://agent-hari-ui.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
