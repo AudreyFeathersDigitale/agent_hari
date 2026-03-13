@@ -1,7 +1,8 @@
 import os
+import secrets
 import shutil
 
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pypdf import PdfReader
@@ -20,6 +21,10 @@ from app.admin_store import (
 from app.memory import init_memory_db, add_message, get_history, clear_history
 
 UPLOADS_DIR = "uploads"
+
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@hari.ai")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Hari123456!")
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", secrets.token_hex(16))
 
 app = FastAPI(
     title="Hari Backend",
@@ -60,6 +65,11 @@ class ObjectionPayload(BaseModel):
 class PostPayload(BaseModel):
     title: str
     content: str
+
+
+class AdminLoginPayload(BaseModel):
+    email: str
+    password: str
 
 
 @app.on_event("startup")
@@ -116,6 +126,22 @@ def get_relevant_document_snippets(user_message: str, limit: int = 2) -> str:
         snippets.append(f"[Document: {doc.get('name', 'sans_nom')}]\n{text}")
 
     return "\n\n".join(snippets)
+
+
+# =========================
+# AUTH ADMIN
+# =========================
+
+@app.post("/admin/login")
+def admin_login(payload: AdminLoginPayload):
+    if payload.email == ADMIN_EMAIL and payload.password == ADMIN_PASSWORD:
+        return {
+            "success": True,
+            "token": ADMIN_TOKEN,
+            "email": ADMIN_EMAIL,
+        }
+
+    raise HTTPException(status_code=401, detail="Identifiants invalides")
 
 
 # =========================
@@ -225,7 +251,7 @@ def chat(req: ChatRequest):
 
 
 # =========================
-# ADMIN
+# ADMIN DATA
 # =========================
 
 @app.get("/admin/data")
