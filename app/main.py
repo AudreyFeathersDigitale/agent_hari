@@ -23,6 +23,13 @@ UPLOADS_DIR = "uploads"
 
 app = FastAPI()
 
+app = FastAPI(
+    title="Hari Backend",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
